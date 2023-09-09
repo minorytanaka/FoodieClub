@@ -17,9 +17,7 @@ services:
 
   backend:
     container_name: backend_foodgram
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: minorytanaka/foodgram_backend
     env_file:
       - ./.env
     depends_on:
@@ -30,9 +28,7 @@ services:
 
   frontend:
     container_name: frontend_foodgram
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: minorytanaka/foodgram_frontend
     volumes:
       - ../frontend/:/app/result_build/
 
