@@ -1,8 +1,7 @@
 from django.contrib import admin
+from foodgram import settings
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
-
-from foodgram import settings
 
 
 class RecipeIngredientInline(admin.TabularInline):
