@@ -1,4 +1,4 @@
-from api.utils import Base64ImageField, is_recipe_unique
+from api.utils import Base64ImageField
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from rest_framework import serializers

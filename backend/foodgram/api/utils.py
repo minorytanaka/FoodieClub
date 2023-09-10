@@ -1,7 +1,7 @@
 import base64
 
 from django.core.files.base import ContentFile
-from recipes.models import Recipe
+# from recipes.models import Recipe
 from rest_framework import serializers
 
 
@@ -14,10 +14,10 @@ class Base64ImageField(serializers.ImageField):
         return super().to_internal_value(data)
 
 
-def is_recipe_unique(name, ingredients):
-    try:
-        Recipe.objects.get(name=name,
-                           recipe_ingredients__ingredient__in=ingredients)
-        return False
-    except Recipe.DoesNotExist:
-        return True
+# def is_recipe_unique(name, ingredients):
+#     try:
+#         Recipe.objects.get(name=name,
+#                            recipe_ingredients__ingredient__in=ingredients)
+#         return False
+#     except Recipe.DoesNotExist:
+#         return True
