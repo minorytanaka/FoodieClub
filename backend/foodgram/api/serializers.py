@@ -163,14 +163,18 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             'cooking_time'
         )
 
-    # def validate(self, data):
-    #     name = data['name']
-    #     ingredients = data['recipe_ingredients']
-    #     if not is_recipe_unique(name, ingredients):
-    #         raise serializers.ValidationError(
-    #             "Рецепт с таким названием и ингредиентами уже существует"
-    #         )
-    #     return data
+    def validate_ingredients(self, ingredients):
+        if not ingredients:
+            raise serializers.ValidationError(
+                "Количество ингредиентов не может быть меньше одного"
+            )
+        seen = set()
+        for item in ingredients:
+            ingredient_name = item['ingredient'].name
+            if ingredient_name in seen:
+                raise serializers.ValidationError("Ингредиенты повторяются")
+            seen.add(ingredient_name)
+        return ingredients
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop('recipe_ingredients')
