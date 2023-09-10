@@ -1,5 +1,5 @@
 from api.filters import IngredientFilter
-from api.permissions import IsAdminReadOnly, IsAuthorOrAdminReadOnlyPermission
+from api.permissions import IsAdminReadOnly, IsAdminAuthorOrReadOnly
 from api.serializers import (IngredientSerializer, RecipeCreateSerializer,
                              RecipeSerializer, SubscribedUserSerializer,
                              TagSerializer)
@@ -34,7 +34,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = (IsAuthorOrAdminReadOnlyPermission,)
+    permission_classes = (IsAdminAuthorOrReadOnly,)
 
     def get_queryset(self):
         recipes = Recipe.objects.prefetch_related(
