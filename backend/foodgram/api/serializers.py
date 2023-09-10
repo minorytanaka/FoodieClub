@@ -1,4 +1,4 @@
-from api.utils import Base64ImageField
+from api.utils import Base64ImageField, is_recipe_unique
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from rest_framework import serializers
@@ -162,6 +162,15 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             'text',
             'cooking_time'
         )
+
+    def validate(self, data):
+        name = data['name']
+        ingredients = data['recipe_ingredients']
+        if not is_recipe_unique(name, ingredients):
+            raise serializers.ValidationError(
+                "Рецепт с таким названием и ингредиентами уже существует"
+            )
+        return data
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop('recipe_ingredients')
