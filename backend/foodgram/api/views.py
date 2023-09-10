@@ -1,5 +1,5 @@
 from api.filters import IngredientFilter
-from api.permissions import IsAdminReadOnly, IsAdminAuthorOrReadOnly
+from api.permissions import IsAdminAuthorOrReadOnly, IsAdminReadOnly
 from api.serializers import (IngredientSerializer, RecipeCreateSerializer,
                              RecipeSerializer, SubscribedUserSerializer,
                              TagSerializer)
