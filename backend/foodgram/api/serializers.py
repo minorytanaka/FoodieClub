@@ -1,8 +1,7 @@
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from rest_framework import serializers
-
 from api.utils import Base64ImageField
+from rest_framework import serializers
 from foodgram.settings import MAX_VALUE, MIN_VALUE
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import User
