@@ -1,8 +1,11 @@
-from api.utils import Base64ImageField
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from rest_framework import serializers
+from django.shortcuts import get_object_or_404
+
+from foodgram.settings import MIN_VALUE, MAX_VALUE
 from users.models import User
+from api.utils import Base64ImageField
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 
 
 class UserSerializer(UserSerializer):
@@ -27,7 +30,7 @@ class UserSerializer(UserSerializer):
 
 
 class UserCreateSerializer(UserCreateSerializer):
-    password = serializers.CharField(style={"input_type": "password"},
+    password = serializers.CharField(style={'input_type': 'password'},
                                      write_only=True)
 
     class Meta(UserCreateSerializer.Meta):
@@ -136,6 +139,10 @@ class IngredientAddSerializer(serializers.ModelSerializer):
         source='ingredient',
         queryset=Ingredient.objects.all()
     )
+    amount = serializers.IntegerField(
+        min_value=MIN_VALUE,
+        max_value=MAX_VALUE
+    )
 
     class Meta:
         model = RecipeIngredient
@@ -151,6 +158,10 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         many=True, source='recipe_ingredients'
     )
     image = Base64ImageField(required=False)
+    cooking_time = serializers.IntegerField(
+        min_value=MIN_VALUE,
+        max_value=MAX_VALUE
+    )
 
     class Meta:
         model = Recipe
@@ -166,15 +177,34 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     def validate_ingredients(self, ingredients):
         if not ingredients:
             raise serializers.ValidationError(
-                "Количество ингредиентов не может быть меньше одного"
+                'Количество ингредиентов не может быть меньше одного'
             )
         seen = set()
         for item in ingredients:
             ingredient_name = item['ingredient'].name
             if ingredient_name in seen:
-                raise serializers.ValidationError("Ингредиенты повторяются")
+                raise serializers.ValidationError('Ингредиенты повторяются')
             seen.add(ingredient_name)
         return ingredients
+
+    def _bulk_create_recipe_ingredients(self, recipe, ingredients_data):
+        recipe_ingredients = []
+
+        for ingredient_data in ingredients_data:
+            ingredient_id = ingredient_data['ingredient'].id
+            amount = ingredient_data['amount']
+
+            ingredient = get_object_or_404(Ingredient, id=ingredient_id)
+
+            recipe_ingredients.append(
+                RecipeIngredient(
+                    recipe=recipe,
+                    ingredient=ingredient,
+                    amount=amount
+                )
+            )
+
+        RecipeIngredient.objects.bulk_create(recipe_ingredients)
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop('recipe_ingredients')
@@ -182,20 +212,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
         recipe = super().create(validated_data)
 
-        for ingredient_data in ingredients_data:
-            ingredient_id = ingredient_data['ingredient'].id
-            amount = ingredient_data['amount']
-
-            try:
-                ingredient = Ingredient.objects.get(id=ingredient_id)
-            except Ingredient.DoesNotExist:
-                raise serializers.ValidationError("Ingredient not found")
-
-            RecipeIngredient.objects.create(
-                recipe=recipe,
-                ingredient=ingredient,
-                amount=amount
-            )
+        self._bulk_create_recipe_ingredients(recipe, ingredients_data)
 
         recipe.tags.set(tags_data)
         return recipe
@@ -211,24 +228,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
         ingredients_data = validated_data.get('recipe_ingredients', [])
         tags_data = validated_data.pop('tags')
-        print(tags_data)
 
-        RecipeIngredient.objects.filter(recipe=instance).delete()
-
-        for ingredient_data in ingredients_data:
-            ingredient_id = ingredient_data['ingredient'].id
-            amount = ingredient_data['amount']
-
-            try:
-                ingredient = Ingredient.objects.get(id=ingredient_id)
-            except Ingredient.DoesNotExist:
-                raise serializers.ValidationError("Ingredient not found")
-
-            RecipeIngredient.objects.create(
-                recipe=instance,
-                ingredient=ingredient,
-                amount=amount
-            )
+        instance.recipe_ingredients.delete()
+        self._bulk_create_recipe_ingredients(instance, ingredients_data)
 
         instance.tags.clear()
         instance.tags.set(tags_data)
@@ -270,9 +272,14 @@ class SubscribedUserSerializer(UserSerializer):
     def get_recipes(self, obj):
         recipes_limit = self.context['request'].query_params.get(
             'recipes_limit', None)
+        try:
+            recipes_limit_int = int(recipes_limit)
+        except (TypeError, ValueError):
+            recipes_limit_int = None
+
         recipes = (
-            obj.recipes.all()[:int(recipes_limit)]
-            if recipes_limit is not None
+            obj.recipes.all()[:recipes_limit_int]
+            if recipes_limit_int is not None
             else obj.recipes.all()
         )
         serializer = RecipeMinifiedSerializer(recipes, many=True)

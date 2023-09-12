@@ -7,33 +7,29 @@ class User(AbstractUser):
     email = models.EmailField(
         max_length=254,
         unique=True,
-        blank=False,
         null=False,
         verbose_name='Адрес электронной почты'
     )
     username = models.CharField(
         max_length=150,
         unique=True,
-        blank=False,
         null=False,
         verbose_name='Юзернейм',
         validators=[username_validator]
     )
     first_name = models.CharField(
         max_length=150,
-        blank=False,
         null=False,
         verbose_name='Имя'
     )
     last_name = models.CharField(
         max_length=150,
-        blank=False,
         null=False,
         verbose_name='Фамилия'
     )
 
     class Meta:
-        ordering = ['id']
+        ordering = ['username']
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
@@ -63,6 +59,7 @@ class Follow(models.Model):
     )
 
     class Meta:
+        ordering = ['-following']
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'following'],

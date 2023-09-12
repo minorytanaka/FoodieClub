@@ -151,3 +151,5 @@ DJOSER = {
 }
 
 EMPTY_VALUE = '-пусто-'
+MIN_VALUE = 1
+MAX_VALUE = 32000

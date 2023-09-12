@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from foodgram import settings
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
@@ -7,6 +8,7 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
 class RecipeIngredientInline(admin.TabularInline):
     model = RecipeIngredient
     extra = 1
+    min_num = 1
 
 
 @admin.register(Tag)

@@ -1,18 +1,18 @@
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+
 from users.models import User
+from foodgram.settings import MIN_VALUE, MAX_VALUE
 
 
 class Ingredient(models.Model):
     name = models.CharField(
         max_length=200,
-        blank=False,
         null=False,
         verbose_name='Название'
     )
     measurement_unit = models.CharField(
         max_length=200,
-        blank=False,
         null=False,
         verbose_name='Единица измерения'
     )
@@ -29,21 +29,18 @@ class Ingredient(models.Model):
 class Tag(models.Model):
     name = models.CharField(
         max_length=200,
-        blank=False,
         null=False,
         unique=True,
         verbose_name='Тег'
     )
     color = models.CharField(
         max_length=7,
-        blank=False,
         null=False,
         unique=True,
         verbose_name='Цвет'
     )
     slug = models.SlugField(
         max_length=200,
-        blank=False,
         null=True,
         unique=True,
         verbose_name='Слаг'
@@ -77,23 +74,22 @@ class Recipe(models.Model):
     )
     name = models.CharField(
         max_length=200,
-        blank=False,
         null=False,
         verbose_name='Название'
     )
     image = models.ImageField(
         upload_to='recipes/images',
-        blank=False,
         null=False
     )
     text = models.TextField(
-        blank=False,
         null=False,
         verbose_name='Описание'
     )
-    cooking_time = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)],
-        blank=False,
+    cooking_time = models.PositiveSmallIntegerField(
+        validators=[
+            MinValueValidator(MIN_VALUE),
+            MaxValueValidator(MAX_VALUE)
+        ],
         null=False,
         verbose_name='Время приготовления'
     )
@@ -119,8 +115,11 @@ class RecipeIngredient(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Ингредиент'
     )
-    amount = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)],
+    amount = models.PositiveSmallIntegerField(
+        validators=[
+            MinValueValidator(MIN_VALUE),
+            MaxValueValidator(MAX_VALUE)
+        ],
         verbose_name='Количество'
     )
 
@@ -128,6 +127,9 @@ class RecipeIngredient(models.Model):
         ordering = ['-pk']
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецепте'
+
+    def __str__(self):
+        return f"{self.ingredient.name} - {self.amount} ({self.recipe.name})"
 
 
 class Favorite(models.Model):
