@@ -1,10 +1,9 @@
 from django.db.models import Sum
 from django.shortcuts import HttpResponse, get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins, status, views, viewsets
+from rest_framework import mixins, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
-from rest_framework.response import Response
 from api.filters import IngredientFilter
 from api.permissions import IsAdminAuthorOrReadOnly, IsAdminReadOnly
 from api.serializers import (IngredientSerializer, RecipeCreateSerializer,
@@ -12,7 +11,9 @@ from api.serializers import (IngredientSerializer, RecipeCreateSerializer,
                              TagSerializer)
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
-from users.models import Follow, User
+from users.models import User
+from api.utils import (handle_favorite_or_shopping_cart_request,
+                       handle_subscription_request)
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -101,35 +102,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return response
 
 
-class UserSubscriptionsAPIView(views.APIView):
-
-    def post(self, request, author_id):
-        user = request.user
-        author = get_object_or_404(User, id=author_id)
-        if user == author:
-            return Response({'detail': 'Нельзя подписаться на самого себя!'})
-
-        subscription, created = Follow.objects.get_or_create(user=user,
-                                                             following=author)
-        if created:
-            return Response({'detail': 'Подписка успешно создана.'},
-                            status=status.HTTP_201_CREATED)
-        return Response({'detail': 'Вы уже подписаны.'},
-                        status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, author_id):
-        user = request.user
-        author = get_object_or_404(User, id=author_id)
-        subscription = user.following.filter(following=author)
-
-        if subscription.exists():
-            subscription.delete()
-            return Response({'detail': 'Подписка отменена.'},
-                            status=status.HTTP_204_NO_CONTENT)
-        return Response({'detail': 'Подписка не найдена.'},
-                        status=status.HTTP_404_NOT_FOUND)
-
-
 class SubscriptionsListAPIView(mixins.ListModelMixin,
                                viewsets.GenericViewSet):
     serializer_class = SubscribedUserSerializer
@@ -139,30 +111,32 @@ class SubscriptionsListAPIView(mixins.ListModelMixin,
         return User.objects.filter(following__user=self.request.user)
 
 
+class UserSubscriptionsAPIView(views.APIView):
+
+    def post(self, request, author_id):
+        user = request.user
+        author = get_object_or_404(User, id=author_id)
+        return handle_subscription_request(user, author, 'create')
+
+    def delete(self, request, author_id):
+        user = request.user
+        author = get_object_or_404(User, id=author_id)
+        return handle_subscription_request(user, author, 'delete')
+
+
 class FavoriteAPIView(views.APIView):
 
     def post(self, request, recipe_id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=recipe_id)
-
-        if user.favorites.filter(recipe=recipe).exists():
-            return Response({'detail': 'Рецепт уже добавлен в избранное!'},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-        Favorite.objects.create(user=user, recipe=recipe)
-        return Response({'detail': 'Рецепт успешно добавлен в избранное!'},
-                        status=status.HTTP_201_CREATED)
+        return handle_favorite_or_shopping_cart_request(
+            user, recipe, Favorite, 'add')
 
     def delete(self, request, recipe_id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        favorite_recipe = user.favorites.filter(recipe=recipe)
-        if favorite_recipe.exists():
-            favorite_recipe.delete()
-            return Response({'detail': 'Рецепт успешно удален из избранного!'},
-                            status=status.HTTP_204_NO_CONTENT)
-        return Response({'detail': 'Рецепт не найден.'},
-                        status=status.HTTP_404_NOT_FOUND)
+        return handle_favorite_or_shopping_cart_request(
+            user, recipe, Favorite, 'remove')
 
 
 class ShoppingCartAPIView(views.APIView):
@@ -170,27 +144,11 @@ class ShoppingCartAPIView(views.APIView):
     def post(self, request, recipe_id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=recipe_id)
-
-        if user.shopping_carts.filter(recipe=recipe).exists():
-            return Response({
-                'detail': 'Рецепт уже добавлен в список покупок!'},
-                status=status.HTTP_400_BAD_REQUEST)
-
-        ShoppingCart.objects.create(user=user, recipe=recipe)
-
-        return Response({
-            'detail': 'Рецепт успешно добавлен в список покупок!'},
-            status=status.HTTP_201_CREATED)
+        return handle_favorite_or_shopping_cart_request(
+            user, recipe, ShoppingCart, 'add')
 
     def delete(self, request, recipe_id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        shoppingcart_recipe = user.shopping_carts.filter(recipe=recipe)
-
-        if shoppingcart_recipe.exists():
-            shoppingcart_recipe.delete()
-            return Response({
-                'detail': 'Рецепт успешно удален из списка покупок!'},
-                status=status.HTTP_204_NO_CONTENT)
-        return Response({'detail': 'Рецепт не найден.'},
-                        status=status.HTTP_404_NOT_FOUND)
+        return handle_favorite_or_shopping_cart_request(
+            user, recipe, ShoppingCart, 'remove')
