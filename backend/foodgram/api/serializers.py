@@ -1,11 +1,11 @@
-from djoser.serializers import UserCreateSerializer, UserSerializer
-from rest_framework import serializers
 from django.shortcuts import get_object_or_404
+from rest_framework import serializers
+from djoser.serializers import UserCreateSerializer, UserSerializer
 
-from foodgram.settings import MIN_VALUE, MAX_VALUE
-from users.models import User
 from api.utils import Base64ImageField
+from foodgram.settings import MIN_VALUE, MAX_VALUE
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
+from users.models import User
 
 
 class UserSerializer(UserSerializer):
