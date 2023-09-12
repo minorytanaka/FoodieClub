@@ -47,9 +47,9 @@ def handle_subscription_request(user, author, action):
         return Response({'detail': 'Вы уже подписаны.'},
                         status=status.HTTP_400_BAD_REQUEST)
     elif action == 'delete':
-        queryset = user.following.filter(following=author)
-        if queryset.exists():
-            queryset.delete()
+        subscription = Follow.objects.filter(user=user, following=author)
+        if subscription.exists():
+            subscription.delete()
             return Response({'detail': 'Подписка отменена.'},
                             status=status.HTTP_204_NO_CONTENT)
         return Response({'detail': 'Подписка не найдена.'},
