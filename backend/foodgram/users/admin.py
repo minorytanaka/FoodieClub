@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 from foodgram import settings
 from users.models import Follow, User
 

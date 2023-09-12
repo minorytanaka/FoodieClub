@@ -1,6 +1,5 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-
 from foodgram.settings import MAX_VALUE, MIN_VALUE
 from users.models import User
 
