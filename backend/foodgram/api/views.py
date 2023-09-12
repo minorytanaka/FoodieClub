@@ -1,19 +1,19 @@
 from django.db.models import Sum
 from django.shortcuts import HttpResponse, get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingCart, Tag)
 from rest_framework import mixins, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
-from users.models import Follow, User
 
 from api.filters import IngredientFilter
 from api.permissions import IsAdminAuthorOrReadOnly, IsAdminReadOnly
 from api.serializers import (IngredientSerializer, RecipeCreateSerializer,
                              RecipeSerializer, SubscribedUserSerializer,
                              TagSerializer)
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
+from users.models import Follow, User
 
 
 class TagViewSet(viewsets.ModelViewSet):
