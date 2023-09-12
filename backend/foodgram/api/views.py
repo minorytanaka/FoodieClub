@@ -111,7 +111,6 @@ class UserSubscriptionsAPIView(views.APIView):
 
         subscription, created = Follow.objects.get_or_create(user=user,
                                                              following=author)
-        print("Hello world epta!")
         if created:
             return Response({'detail': 'Подписка успешно создана.'},
                             status=status.HTTP_201_CREATED)
