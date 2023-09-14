@@ -139,7 +139,6 @@ class FavoriteAPIView(views.APIView):
         return handle_request(
             user=user,
             recipe=recipe,
-            model_instance=user.favorites,
             action='add_recipe'
         )
 

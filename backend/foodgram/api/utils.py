@@ -20,14 +20,14 @@ def handle_request(action, user, recipe=None,
                    model_instance=None, author=None):
 
     if action == 'add_recipe':
-        if model_instance.filter(recipe=recipe).exists():
+        if user.favorites.filter(recipes=recipe).exists():
             return Response({'detail': 'Рецепт уже добавлен!'},
                             status=status.HTTP_400_BAD_REQUEST)
         model_instance.objects.create(user=user, recipe=recipe)
         return Response({'detail': 'Рецепт успешно добавлен!'},
                         status=status.HTTP_201_CREATED)
     elif action == 'remove_recipe':
-        queryset = model_instance.filter(recipe=recipe)
+        queryset = user.favorites.filter(recipes=recipe)
         if queryset.exists():
             queryset.delete()
             return Response({'detail': 'Рецепт успешно удален!'},
