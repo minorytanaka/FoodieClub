@@ -16,17 +16,18 @@ class Base64ImageField(serializers.ImageField):
         return super().to_internal_value(data)
 
 
-def handle_request(action, user, recipe=None, model_class=None, author=None):
+def handle_request(action, user, recipe=None,
+                   model_instance=None, author=None):
 
     if action == 'add_recipe':
-        if model_class.objects.filter(user=user, recipe=recipe).exists():
+        if model_instance.filter(recipe=recipe).exists():
             return Response({'detail': 'Рецепт уже добавлен!'},
                             status=status.HTTP_400_BAD_REQUEST)
-        model_class.objects.create(user=user, recipe=recipe)
+        model_instance.objects.create(user=user, recipe=recipe)
         return Response({'detail': 'Рецепт успешно добавлен!'},
                         status=status.HTTP_201_CREATED)
     elif action == 'remove_recipe':
-        queryset = model_class.objects.filter(user=user, recipe=recipe)
+        queryset = model_instance.filter(recipe=recipe)
         if queryset.exists():
             queryset.delete()
             return Response({'detail': 'Рецепт успешно удален!'},
@@ -45,7 +46,7 @@ def handle_request(action, user, recipe=None, model_class=None, author=None):
         return Response({'detail': 'Вы уже подписаны.'},
                         status=status.HTTP_400_BAD_REQUEST)
     elif action == 'delete_subscription':
-        subscription = Follow.objects.filter(user=user, following=author)
+        subscription = user.following.filter(following=author)
         if subscription.exists():
             subscription.delete()
             return Response({'detail': 'Подписка отменена.'},
