@@ -46,7 +46,7 @@ def handle_request(action, user, recipe=None,
         return Response({'detail': 'Вы уже подписаны.'},
                         status=status.HTTP_400_BAD_REQUEST)
     elif action == 'delete_subscription':
-        subscription = user.following.filter(following=author)
+        subscription = user.followings.filter(following=author)
         if subscription.exists():
             subscription.delete()
             return Response({'detail': 'Подписка отменена.'},
