@@ -4,6 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
+
 from api.filters import IngredientFilter
 from api.permissions import IsAdminAuthorOrReadOnly, IsAdminReadOnly
 from api.serializers import (IngredientSerializer, RecipeCreateSerializer,
@@ -12,8 +13,7 @@ from api.serializers import (IngredientSerializer, RecipeCreateSerializer,
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
 from users.models import User
-from api.utils import (handle_favorite_or_shopping_cart_request,
-                       handle_subscription_request)
+from api.utils import handle_request
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -116,12 +116,20 @@ class UserSubscriptionsAPIView(views.APIView):
     def post(self, request, author_id):
         user = request.user
         author = get_object_or_404(User, id=author_id)
-        return handle_subscription_request(user, author, 'create')
+        return handle_request(
+            user=user,
+            author=author,
+            action='create_subscription'
+        )
 
     def delete(self, request, author_id):
         user = request.user
         author = get_object_or_404(User, id=author_id)
-        return handle_subscription_request(user, author, 'delete')
+        return handle_request(
+            user=user,
+            author=author,
+            action='delete_subscription'
+        )
 
 
 class FavoriteAPIView(views.APIView):
@@ -129,14 +137,22 @@ class FavoriteAPIView(views.APIView):
     def post(self, request, recipe_id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        return handle_favorite_or_shopping_cart_request(
-            user, recipe, Favorite, 'add')
+        return handle_request(
+            user=user,
+            recipe=recipe,
+            model_class=Favorite,
+            action='add_recipe'
+        )
 
     def delete(self, request, recipe_id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        return handle_favorite_or_shopping_cart_request(
-            user, recipe, Favorite, 'remove')
+        return handle_request(
+            user=user,
+            recipe=recipe,
+            model_class=Favorite,
+            action='remove_recipe'
+        )
 
 
 class ShoppingCartAPIView(views.APIView):
@@ -144,11 +160,19 @@ class ShoppingCartAPIView(views.APIView):
     def post(self, request, recipe_id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        return handle_favorite_or_shopping_cart_request(
-            user, recipe, ShoppingCart, 'add')
+        return handle_request(
+            user=user,
+            recipe=recipe,
+            model_class=ShoppingCart,
+            action='add_recipe'
+        )
 
     def delete(self, request, recipe_id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        return handle_favorite_or_shopping_cart_request(
-            user, recipe, ShoppingCart, 'remove')
+        return handle_request(
+            user=user,
+            recipe=recipe,
+            model_class=ShoppingCart,
+            action='remove_recipe'
+        )

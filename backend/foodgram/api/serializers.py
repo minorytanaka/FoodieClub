@@ -1,8 +1,9 @@
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
+
 from api.utils import Base64ImageField
-from foodgram.settings import MAX_VALUE, MIN_VALUE
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import User
 
@@ -139,8 +140,8 @@ class IngredientAddSerializer(serializers.ModelSerializer):
         queryset=Ingredient.objects.all()
     )
     amount = serializers.IntegerField(
-        min_value=MIN_VALUE,
-        max_value=MAX_VALUE
+        min_value=settings.MIN_VALUE,
+        max_value=settings.MAX_VALUE
     )
 
     class Meta:
@@ -158,8 +159,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     )
     image = Base64ImageField(required=False)
     cooking_time = serializers.IntegerField(
-        min_value=MIN_VALUE,
-        max_value=MAX_VALUE
+        min_value=settings.MIN_VALUE,
+        max_value=settings.MAX_VALUE
     )
 
     class Meta:

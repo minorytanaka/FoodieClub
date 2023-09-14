@@ -1,5 +1,6 @@
 from django.contrib import admin
-from foodgram import settings
+from django.conf import settings
+
 from users.models import Follow, User
 
 

@@ -1,5 +1,6 @@
 from django.contrib import admin
-from foodgram import settings
+from django.conf import settings
+
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
 
