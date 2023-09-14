@@ -34,6 +34,21 @@ def handle_request(action, user, recipe=None,
                             status=status.HTTP_204_NO_CONTENT)
         return Response({'detail': 'Рецепт не найден.'},
                         status=status.HTTP_404_NOT_FOUND)
+    elif action == 'add_recipe_shoppingcart':
+        if user.shopping_carts.filter(recipe=recipe).exists():
+            return Response({'detail': 'Рецепт уже добавлен!'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        model_class.objects.create(user=user, recipe=recipe)
+        return Response({'detail': 'Рецепт успешно добавлен!'},
+                        status=status.HTTP_201_CREATED)
+    elif action == 'remove_recipe_shoppingcart':
+        queryset = user.shopping_carts.filter(recipe=recipe)
+        if queryset.exists():
+            queryset.delete()
+            return Response({'detail': 'Рецепт успешно удален!'},
+                            status=status.HTTP_204_NO_CONTENT)
+        return Response({'detail': 'Рецепт не найден.'},
+                        status=status.HTTP_404_NOT_FOUND)
     elif action == 'create_subscription':
         if user == author:
             return Response({'detail': 'Нельзя подписаться на самого себя!'},

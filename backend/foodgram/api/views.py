@@ -164,7 +164,7 @@ class ShoppingCartAPIView(views.APIView):
             user=user,
             recipe=recipe,
             model_instance=user.shopping_carts,
-            action='add_recipe'
+            action='add_recipe_shoppingcart'
         )
 
     def delete(self, request, recipe_id):
@@ -174,5 +174,5 @@ class ShoppingCartAPIView(views.APIView):
             user=user,
             recipe=recipe,
             model_instance=user.shopping_carts,
-            action='remove_recipe'
+            action='remove_recipe_shoppingcart'
         )
