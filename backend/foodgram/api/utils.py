@@ -17,17 +17,17 @@ class Base64ImageField(serializers.ImageField):
 
 
 def handle_request(action, user, recipe=None,
-                   model_instance=None, author=None):
+                   model_class=None, author=None):
 
-    if action == 'add_recipe':
-        if user.favorites.filter(recipes=recipe).exists():
+    if action == 'add_recipe_favorite':
+        if user.favorites.filter(recipe=recipe).exists():
             return Response({'detail': 'Рецепт уже добавлен!'},
                             status=status.HTTP_400_BAD_REQUEST)
-        model_instance.objects.create(user=user, recipe=recipe)
+        model_class.objects.create(user=user, recipe=recipe)
         return Response({'detail': 'Рецепт успешно добавлен!'},
                         status=status.HTTP_201_CREATED)
-    elif action == 'remove_recipe':
-        queryset = user.favorites.filter(recipes=recipe)
+    elif action == 'remove_recipe_favorite':
+        queryset = user.favorites.filter(recipe=recipe)
         if queryset.exists():
             queryset.delete()
             return Response({'detail': 'Рецепт успешно удален!'},
