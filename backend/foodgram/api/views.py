@@ -10,8 +10,7 @@ from api.permissions import IsAdminAuthorOrReadOnly, IsAdminReadOnly
 from api.serializers import (IngredientSerializer, RecipeCreateSerializer,
                              RecipeSerializer, SubscribedUserSerializer,
                              TagSerializer)
-from recipes.models import (Ingredient, Recipe, RecipeIngredient, Tag,
-                            Favorite)
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import User
 from api.utils import handle_request
 
@@ -140,7 +139,6 @@ class FavoriteAPIView(views.APIView):
         return handle_request(
             user=user,
             recipe=recipe,
-            model_class=Favorite,
             action='add_recipe_favorite'
         )
 
@@ -150,7 +148,6 @@ class FavoriteAPIView(views.APIView):
         return handle_request(
             user=user,
             recipe=recipe,
-            model_class=Favorite,
             action='remove_recipe_favorite'
         )
 
@@ -163,7 +160,6 @@ class ShoppingCartAPIView(views.APIView):
         return handle_request(
             user=user,
             recipe=recipe,
-            model_instance=user.shopping_carts,
             action='add_recipe_shoppingcart'
         )
 
@@ -173,6 +169,5 @@ class ShoppingCartAPIView(views.APIView):
         return handle_request(
             user=user,
             recipe=recipe,
-            model_instance=user.shopping_carts,
             action='remove_recipe_shoppingcart'
         )

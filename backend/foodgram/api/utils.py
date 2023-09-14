@@ -1,10 +1,12 @@
 import base64
 
+from django.shortcuts import get_object_or_404
 from django.core.files.base import ContentFile
 from rest_framework.response import Response
 from rest_framework import serializers, status
 
 from users.models import Follow
+from recipes.models import ShoppingCart, Favorite
 
 
 class Base64ImageField(serializers.ImageField):
@@ -16,14 +18,13 @@ class Base64ImageField(serializers.ImageField):
         return super().to_internal_value(data)
 
 
-def handle_request(action, user, recipe=None,
-                   model_class=None, author=None):
+def handle_request(action, user, recipe=None, author=None):
 
     if action == 'add_recipe_favorite':
         if user.favorites.filter(recipe=recipe).exists():
             return Response({'detail': 'Рецепт уже добавлен!'},
                             status=status.HTTP_400_BAD_REQUEST)
-        model_class.objects.create(user=user, recipe=recipe)
+        Favorite.objects.create(user=user, recipe=recipe)
         return Response({'detail': 'Рецепт успешно добавлен!'},
                         status=status.HTTP_201_CREATED)
     elif action == 'remove_recipe_favorite':
@@ -35,20 +36,25 @@ def handle_request(action, user, recipe=None,
         return Response({'detail': 'Рецепт не найден.'},
                         status=status.HTTP_404_NOT_FOUND)
     elif action == 'add_recipe_shoppingcart':
-        if user.shopping_carts.filter(recipe=recipe).exists():
-            return Response({'detail': 'Рецепт уже добавлен!'},
+        shopping_cart, created = ShoppingCart.objects.get_or_create(
+            user=user,
+            recipe=recipe
+        )
+        if created:
+            return Response({'detail': 'Рецепт успешно добавлен в корзину.'},
+                            status=status.HTTP_201_CREATED)
+        else:
+            return Response({'detail': 'Рецепт уже в корзине.'},
                             status=status.HTTP_400_BAD_REQUEST)
-        model_class.objects.create(user=user, recipe=recipe)
-        return Response({'detail': 'Рецепт успешно добавлен!'},
-                        status=status.HTTP_201_CREATED)
     elif action == 'remove_recipe_shoppingcart':
-        queryset = user.shopping_carts.filter(recipe=recipe)
-        if queryset.exists():
-            queryset.delete()
-            return Response({'detail': 'Рецепт успешно удален!'},
-                            status=status.HTTP_204_NO_CONTENT)
-        return Response({'detail': 'Рецепт не найден.'},
-                        status=status.HTTP_404_NOT_FOUND)
+        shopping_cart = get_object_or_404(
+            ShoppingCart,
+            user=user,
+            recipe=recipe
+        )
+        shopping_cart.delete()
+        return Response({'detail': 'Рецепт успешно удален!'},
+                        status=status.HTTP_204_NO_CONTENT)
     elif action == 'create_subscription':
         if user == author:
             return Response({'detail': 'Нельзя подписаться на самого себя!'},
@@ -61,13 +67,10 @@ def handle_request(action, user, recipe=None,
         return Response({'detail': 'Вы уже подписаны.'},
                         status=status.HTTP_400_BAD_REQUEST)
     elif action == 'delete_subscription':
-        subscription = user.followings.filter(following=author)
-        if subscription.exists():
-            subscription.delete()
-            return Response({'detail': 'Подписка отменена.'},
-                            status=status.HTTP_204_NO_CONTENT)
-        return Response({'detail': 'Подписка не найдена.'},
-                        status=status.HTTP_404_NOT_FOUND)
+        subscription = get_object_or_404(Follow, user=user, following=author)
+        subscription.delete()
+        return Response({'detail': 'Подписка отменена.'},
+                        status=status.HTTP_204_NO_CONTENT)
 
 # def handle_favorite_or_shopping_cart_request(user, recipe,
 #                                              model_class, action):
