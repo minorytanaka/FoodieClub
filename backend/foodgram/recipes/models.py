@@ -8,12 +8,10 @@ from users.models import User
 class Ingredient(models.Model):
     name = models.CharField(
         max_length=200,
-        null=False,
         verbose_name='Название'
     )
     measurement_unit = models.CharField(
         max_length=200,
-        null=False,
         verbose_name='Единица измерения'
     )
 
@@ -29,19 +27,16 @@ class Ingredient(models.Model):
 class Tag(models.Model):
     name = models.CharField(
         max_length=200,
-        null=False,
         unique=True,
         verbose_name='Тег'
     )
     color = models.CharField(
         max_length=7,
-        null=False,
         unique=True,
         verbose_name='Цвет'
     )
     slug = models.SlugField(
         max_length=200,
-        null=True,
         unique=True,
         verbose_name='Слаг'
     )
@@ -74,15 +69,13 @@ class Recipe(models.Model):
     )
     name = models.CharField(
         max_length=200,
-        null=False,
         verbose_name='Название'
     )
     image = models.ImageField(
         upload_to='recipes/images',
-        null=False
+        verbose_name='Картинка'
     )
     text = models.TextField(
-        null=False,
         verbose_name='Описание'
     )
     cooking_time = models.PositiveSmallIntegerField(
@@ -90,7 +83,6 @@ class Recipe(models.Model):
             MinValueValidator(settings.MIN_VALUE),
             MaxValueValidator(settings.MAX_VALUE)
         ],
-        null=False,
         verbose_name='Время приготовления'
     )
 

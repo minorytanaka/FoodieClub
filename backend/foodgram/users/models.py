@@ -8,24 +8,20 @@ class User(AbstractUser):
     email = models.EmailField(
         max_length=254,
         unique=True,
-        null=False,
         verbose_name='Адрес электронной почты'
     )
     username = models.CharField(
         max_length=150,
         unique=True,
-        null=False,
         verbose_name='Юзернейм',
         validators=[username_validator]
     )
     first_name = models.CharField(
         max_length=150,
-        null=False,
         verbose_name='Имя'
     )
     last_name = models.CharField(
         max_length=150,
-        null=False,
         verbose_name='Фамилия'
     )
 

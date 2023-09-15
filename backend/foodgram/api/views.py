@@ -13,7 +13,7 @@ from api.serializers import (IngredientSerializer, RecipeCreateSerializer,
 from recipes.models import (Ingredient, Recipe, RecipeIngredient, Tag,
                             Favorite, ShoppingCart)
 from users.models import User
-from api.utils import handle_request
+from api.utils import create_object, delete_object
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -116,19 +116,17 @@ class UserSubscriptionsAPIView(views.APIView):
     def post(self, request, author_id):
         user = request.user
         author = get_object_or_404(User, id=author_id)
-        return handle_request(
+        return create_object(
             user=user,
             author=author,
-            action='create_subscription'
         )
 
     def delete(self, request, author_id):
         user = request.user
         author = get_object_or_404(User, id=author_id)
-        return handle_request(
+        return delete_object(
             user=user,
             author=author,
-            action='delete_subscription'
         )
 
 
@@ -137,20 +135,18 @@ class FavoriteAPIView(views.APIView):
     def post(self, request, recipe_id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        return handle_request(
+        return create_object(
             user=user,
             recipe=recipe,
-            action='add_recipe',
             model_class=Favorite
         )
 
     def delete(self, request, recipe_id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        return handle_request(
+        return delete_object(
             user=user,
             recipe=recipe,
-            action='remove_recipe',
             model_class=Favorite
         )
 
@@ -160,19 +156,17 @@ class ShoppingCartAPIView(views.APIView):
     def post(self, request, recipe_id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        return handle_request(
+        return create_object(
             user=user,
             recipe=recipe,
-            action='add_recipe',
             model_class=ShoppingCart
         )
 
     def delete(self, request, recipe_id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        return handle_request(
+        return delete_object(
             user=user,
             recipe=recipe,
-            action='remove_recipe',
             model_class=ShoppingCart
         )
